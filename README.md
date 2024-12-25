@@ -1,7 +1,7 @@
-# On-Demand Traffic Shadow System
+# Locust-Shadow
 
 ## Project Overview
-This project aims to create an on-demand traffic shadow system based on production logs using Locust. The system will replay traffic patterns from production environments in a controlled manner, allowing for testing and analysis of application behavior under realistic load conditions.
+Locust shadow lets you create an on-demand traffic shadow based on production logs using Locust. Traffic patterns from production environment is replayed in a controlled manner, allowing for testing and analysis of application behavior under realistic load conditions.
 
 ## Key Components
 
@@ -23,7 +23,7 @@ This project aims to create an on-demand traffic shadow system based on producti
 [Production Logs] -> [Log Processor] -> [Minute-Batches]
                                               |
                                               v
-[Redis/Sync Provider] <-> [Locust Master] <-> [Locust Workers]
+[Redis/Syncer]   <-> [Locust Master] <-> [Locust Workers]
                                               |
                                               v
                                         [Target System]
