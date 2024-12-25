@@ -1,0 +1,8 @@
+host: "http://localhost:8000"
+minute_batches:
+  - rps: 2
+    request_files:
+      - "./dev/test_minute_batch_01/requests1.jsonl"
+  - rps: 4
+    request_files:
+      - "./dev/test_minute_batch_01/requests2.jsonl"
