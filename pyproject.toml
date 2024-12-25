@@ -1,7 +1,14 @@
 [project]
-name = "locust-shadow"
+name = "locust-shadow-workspace"
 version = "0.1.0"
-description = "Add your description here"
+description = "locust-shadow"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+locust-shadow = { workspace = true }
+echo-server = { workspace = true }

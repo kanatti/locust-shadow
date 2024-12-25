@@ -1,0 +1,7 @@
+[project]
+name = "locust-shadow"
+version = "0.1.0"
+description = "locust-shadow"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["locust"]
