@@ -1,0 +1,10 @@
+@host = http://localhost:8000
+
+### Echo a simple message
+GET {{host}}/echo?data={"message":"Hello, World!"}
+
+### Echo a more complex JSON
+GET {{host}}/echo?data={"name":"John Doe","age":30,"city":"New York","hobbies":["reading","swimming","coding"]}
+
+### Echo with URL-encoded data
+GET {{host}}/echo?data=%7B%22encoded%22%3A%22This%20is%20URL%20encoded%22%7D
