@@ -84,9 +84,5 @@ class WarmupUser(StrictRpsUser):
     @task
     def execute_request(self):
         request = random.choice(self.requests)
-        start_time = time.time()
-        self.client.get(request["path"], params=request["params"])
-        end_time = time.time()
-
-        latency = end_time - start_time
-        self.record_latency(latency)
+        with self.measure_latency():
+            self.client.get(request["path"], params=request["params"])

@@ -3,6 +3,8 @@ from collections import deque
 from locust import LoadTestShape, HttpUser, constant_pacing
 import logging
 import math
+from contextlib import contextmanager
+import time
 
 class StrictRpsShape(LoadTestShape):
     """
@@ -90,17 +92,56 @@ class StrictRpsShape(LoadTestShape):
 
 
 class StrictRpsUser(HttpUser):
-    wait_time = constant_pacing(1) # Default value, will be updated
+    """
+    A custom HttpUser class designed to work with StrictRpsShape.
+    
+    This class provides methods for measuring request latency and updating
+    wait times to maintain a strict RPS (Requests Per Second) rate.
+    """
+
+    wait_time = constant_pacing(1)  # Default value, will be updated
 
     def __init__(self, environment):
         super().__init__(environment)
 
-    def record_latency(self, latency):
+    @contextmanager
+    def measure_latency(self):
+        """
+        A context manager for measuring the latency of a request.
+
+        Usage:
+            with self.measure_latency():
+                self.client.get("/")
+
+        This will automatically record the latency of the request.
+        """
+        start_time = time.time()
+        try:
+            yield
+        finally:
+            end_time = time.time()
+            latency = end_time - start_time
+            self._record_latency(latency)
+
+    def _record_latency(self, latency):
+        """
+        Record the latency of a request to the StrictRpsShape.
+
+        Args:
+            latency (float): The latency of the request in seconds.
+        """
         if isinstance(self.environment.shape_class, StrictRpsShape):
             self.environment.shape_class.record_request_latency(latency)
 
     @classmethod
     def update_wait_time(cls, current_rps, user_count):
+        """
+        Update the wait time for all users of this class based on the current RPS and user count.
+
+        Args:
+            current_rps (float): The current target requests per second.
+            user_count (int): The current number of users.
+        """
         if user_count > 0:
             pacing_per_user = user_count / current_rps
             cls.wait_time = constant_pacing(pacing_per_user)

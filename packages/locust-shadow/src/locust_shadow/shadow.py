@@ -5,7 +5,9 @@ import json
 import gevent
 import threading
 
-class ShadowShape(LoadTestShape):
+from strict_rps import StrictRpsShape, StrictRpsUser
+
+class ShadowShape(StrictRpsShape):
     refill_lock = threading.Lock()
 
     def __init__(self):
@@ -19,11 +21,10 @@ class ShadowShape(LoadTestShape):
         self.shadow_complete = False
 
     def tick(self):
+        run_time = self.get_run_time()
         if self.shadow_config is None:
             logging.warning("Shadow config is not set. Stopping.")
             return None
-
-        run_time = self.get_run_time()
 
         if run_time >= self.total_duration and not self.shadow_complete:
             logging.info("Shadow test complete. Stopping.")
@@ -41,9 +42,12 @@ class ShadowShape(LoadTestShape):
             self.update_minute_batch(current_minute)
 
         current_batch = self.minute_batches[self.current_minute]
-        user_count = current_batch.get("rps", 1)  # Use RPS as user count
+        current_rps = current_batch.get("rps", 1)
 
-        logging.info(f"Current step: {current_minute}, User count: {user_count}")
+        user_count, avg_latency = self.update_for_rps(current_rps)
+
+        logging.info(f"Minute: {current_minute}, Target RPS: {current_rps}, "
+                     f"Avg Latency: {avg_latency:.2f}s, Users: {user_count}")
 
         return (user_count, user_count)  # (user_count, spawn_rate)
 
@@ -86,9 +90,7 @@ class ShadowShape(LoadTestShape):
         if self.runner is not None:
             self.runner.quit()
 
-class ShadowUser(HttpUser):
-    wait_time = constant_throughput(1)  # Default value, will be updated
-
+class ShadowUser(StrictRpsUser):
     def __init__(self, environment):
         super().__init__(environment)
         self.shape = None
@@ -100,11 +102,7 @@ class ShadowUser(HttpUser):
     def execute_request(self):
         request = self.shape.get_next_request()
         if request:
-            self.client.get(request["path"], params=request["params"])
+            with self.measure_latency():
+                self.client.get(request["path"], params=request["params"])
         else:
             gevent.sleep(0.1)  # Small sleep to prevent busy-waiting
-
-    @classmethod
-    def update_wait_time(cls, current_rps, user_count):
-        if user_count > 0:
-            cls.wait_time = constant_throughput(current_rps / user_count)
