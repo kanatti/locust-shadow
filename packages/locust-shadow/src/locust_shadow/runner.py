@@ -3,6 +3,7 @@ from locust.stats import stats_printer, stats_history
 from locust.log import setup_logging
 import gevent
 import logging
+
 from warmup import WarmupShape, WarmupUser
 from shadow import ShadowShape, ShadowUser
 

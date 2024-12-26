@@ -1,6 +1,5 @@
 from locust import LoadTestShape, HttpUser, task, constant_throughput
 import logging
-import time
 from queue import Queue
 import json
 import gevent
