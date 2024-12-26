@@ -5,7 +5,7 @@ import json
 import gevent
 import threading
 
-from strict_rps import StrictRpsShape, StrictRpsUser
+from locust_shadow.strict_rps import StrictRpsShape, StrictRpsUser
 
 class ShadowShape(StrictRpsShape):
     refill_lock = threading.Lock()

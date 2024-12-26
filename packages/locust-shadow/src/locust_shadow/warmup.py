@@ -8,7 +8,7 @@ from collections import deque
 
 from locust import LoadTestShape, HttpUser, task, constant_pacing
 
-from strict_rps import StrictRpsShape, StrictRpsUser
+from locust_shadow.strict_rps import StrictRpsShape, StrictRpsUser
 
 class WarmupShape(StrictRpsShape):
     def __init__(self):

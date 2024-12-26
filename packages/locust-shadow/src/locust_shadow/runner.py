@@ -4,8 +4,8 @@ from locust.log import setup_logging
 import gevent
 import logging
 
-from warmup import WarmupShape, WarmupUser
-from shadow import ShadowShape, ShadowUser
+from locust_shadow.warmup import WarmupShape, WarmupUser
+from locust_shadow.shadow import ShadowShape, ShadowUser
 
 def _setup_locust_environment(config, is_warmup=False):
     if is_warmup:

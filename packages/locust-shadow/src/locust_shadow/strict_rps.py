@@ -1,10 +1,11 @@
 import threading
 from collections import deque
-from locust import LoadTestShape, HttpUser, constant_pacing
 import logging
 import math
 from contextlib import contextmanager
 import time
+
+from locust import LoadTestShape, HttpUser, constant_pacing
 
 class StrictRpsShape(LoadTestShape):
     """

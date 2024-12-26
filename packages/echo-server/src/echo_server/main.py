@@ -18,6 +18,9 @@ async def echo(data: str = Query(...), delay_ms: int = Query(0, ge=0, le=60000))
     except json.JSONDecodeError:
         return {"data": {"error": "Invalid JSON"}}
 
-if __name__ == "__main__":
+def main():
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+if __name__ == "__main__":
+   main()

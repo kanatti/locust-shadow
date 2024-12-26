@@ -5,3 +5,15 @@ description = "locust-shadow"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = ["locust", "PyYAML"]
+
+[project.scripts]
+cli = "locust_shadow:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+]

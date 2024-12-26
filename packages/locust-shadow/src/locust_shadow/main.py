@@ -1,9 +1,8 @@
 import argparse
-from config import ShadowConfig, WarmupConfig
-
-from runner import run_warmup, run_shadow
-
 import logging
+
+from locust_shadow.config import ShadowConfig, WarmupConfig
+from locust_shadow.runner import run_warmup, run_shadow
 
 logging.basicConfig(level=logging.DEBUG)
 
