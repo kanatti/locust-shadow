@@ -1,0 +1,8 @@
+host: http://localhost:8000
+start_rps: 10
+rps_increment: 20
+step_duration: 60
+end_rps: 100
+request_files:
+  - ./warmup/requests1.jsonl
+  - ./warmup/requests2.jsonl
