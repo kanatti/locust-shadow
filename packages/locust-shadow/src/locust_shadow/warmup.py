@@ -17,8 +17,10 @@ class WarmupShape(LoadTestShape):
         self.latency_buffer = deque(maxlen=100)  # Store last 100 latencies
         self.latency_lock = threading.Lock()  # Add a lock for thread-safety
         self.current_user_count = 1
-        self.slab_size_percent = 0.1  # 10% of current user count
+        self.slab_size_percent = 0.3  # 10% of current user count
         self.buffer_rate = 0.2  # 20% increase when ramping up
+        self.last_rps = None
+        self.last_user_count = None
 
     def tick(self):
         run_time = self.get_run_time()
@@ -51,9 +53,15 @@ class WarmupShape(LoadTestShape):
         logging.info(f"Step: {current_step}/{self.expected_steps}, Target RPS: {current_rps}, "
                      f"Avg Latency: {avg_latency:.2f}s, Users: {self.current_user_count}")
 
-        for user in self.runner.user_classes:
-            if hasattr(user, 'update_wait_time'):
-                user.update_wait_time(current_rps, self.current_user_count)
+        # Update wait time if RPS or user count has changed
+        if current_rps != self.last_rps or self.current_user_count != self.last_user_count:
+            for user in self.runner.user_classes:
+                if hasattr(user, 'update_wait_time'):
+                    user.update_wait_time(current_rps, self.current_user_count)
+
+            # Update last known values
+            self.last_rps = current_rps
+            self.last_user_count = self.current_user_count
 
         return (self.current_user_count, self.current_user_count)
 
@@ -142,3 +150,6 @@ class WarmupUser(HttpUser):
             cls.wait_time = constant_pacing(pacing_per_user)
         else:
             cls.wait_time = constant_pacing(1)  # Default to 1 second pacing if user_count is 0
+        
+        logging.info(f"Updated wait time: RPS={current_rps}, Users={user_count}, "
+                      f"Pacing={pacing_per_user:.4f}s")
