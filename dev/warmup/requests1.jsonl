@@ -1,5 +1,5 @@
-{"timestamp": "2023-05-01T00:00:01", "method": "GET", "path": "/echo", "params": {"data": "{\"message\":\"Hello, World!\"}", "delay_ms": 2000}}
-{"timestamp": "2023-05-01T00:00:03", "method": "GET", "path": "/echo", "params": {"data": "{\"name\":\"John Doe\",\"age\":30}", "delay_ms": 2000}}
-{"timestamp": "2023-05-01T00:00:05", "method": "GET", "path": "/echo", "params": {"data": "{\"colors\":[\"red\",\"green\",\"blue\"]}", "delay_ms": 2000}}
-{"timestamp": "2023-05-01T00:00:08", "method": "GET", "path": "/echo", "params": {"data": "{\"status\":\"active\",\"count\":42}", "delay_ms": 2000}}
+{"timestamp": "2023-05-01T00:00:01", "method": "GET", "path": "/echo", "params": {"data": "{\"message\":\"Hello, World!\"}", "delay_ms": 500}}
+{"timestamp": "2023-05-01T00:00:03", "method": "GET", "path": "/echo", "params": {"data": "{\"name\":\"John Doe\",\"age\":30}", "delay_ms": 1000}}
+{"timestamp": "2023-05-01T00:00:05", "method": "GET", "path": "/echo", "params": {"data": "{\"colors\":[\"red\",\"green\",\"blue\"]}", "delay_ms": 3000}}
+{"timestamp": "2023-05-01T00:00:08", "method": "GET", "path": "/echo", "params": {"data": "{\"status\":\"active\",\"count\":42}", "delay_ms": 6000}}
 {"timestamp": "2023-05-01T00:00:10", "method": "GET", "path": "/echo", "params": {"data": "{\"error\":null,\"success\":true}", "delay_ms": 2000}}

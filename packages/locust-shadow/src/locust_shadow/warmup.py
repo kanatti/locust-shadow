@@ -3,6 +3,7 @@ import json
 import logging
 import time
 import threading
+import math
 from collections import deque
 
 from locust import LoadTestShape, HttpUser, task, constant_pacing
@@ -15,6 +16,9 @@ class WarmupShape(LoadTestShape):
         self.warmup_complete = False
         self.latency_buffer = deque(maxlen=100)  # Store last 100 latencies
         self.latency_lock = threading.Lock()  # Add a lock for thread-safety
+        self.current_user_count = 1
+        self.slab_size_percent = 0.1  # 10% of current user count
+        self.buffer_rate = 0.2  # 20% increase when ramping up
 
     def tick(self):
         run_time = self.get_run_time()
@@ -42,16 +46,16 @@ class WarmupShape(LoadTestShape):
         )
 
         avg_latency = self.get_current_average_latency()
-        estimated_users = max(1, int(current_rps * avg_latency))
+        self.current_user_count = self.calculate_user_count(current_rps, avg_latency)
 
-        logging.info(f"Current step: {current_step}/{self.expected_steps}, Target RPS: {current_rps}, Avg Latency: {avg_latency:.2f}s, Estimated users: {estimated_users}")
+        logging.info(f"Step: {current_step}/{self.expected_steps}, Target RPS: {current_rps}, "
+                     f"Avg Latency: {avg_latency:.2f}s, Users: {self.current_user_count}")
 
-        # Update the wait time for all users
         for user in self.runner.user_classes:
             if hasattr(user, 'update_wait_time'):
-                user.update_wait_time(current_rps, estimated_users)
+                user.update_wait_time(current_rps, self.current_user_count)
 
-        return (estimated_users, estimated_users)  # (user_count, spawn_rate)
+        return (self.current_user_count, self.current_user_count)
 
     def get_current_average_latency(self):
         with self.latency_lock:
@@ -61,7 +65,30 @@ class WarmupShape(LoadTestShape):
 
     def record_request_latency(self, latency):
         self.latency_buffer.append(latency) # Dequeue append is thread-safe.
-    
+
+    def calculate_user_count(self, current_rps, avg_latency):
+        # Calculate raw user count based on current RPS and average latency
+        raw_count = current_rps * avg_latency
+
+        # Add some extra buffer
+        new_user_count = raw_count * (1 + self.buffer_rate)
+
+        # Apply slab so that we dont make small deltas often.
+        slab_size = max(int(self.current_user_count * self.slab_size_percent), 1)
+        slabbed_user_count = math.ceil(new_user_count / slab_size) * slab_size
+
+        # If the new count is higher, allow it to increase
+        if slabbed_user_count > self.current_user_count:
+            return slabbed_user_count
+
+        # If the new count is lower, only decrease it slowly, to avoid thrashing.
+        # We make it slow by only allowing a decrease every 1 minute (60 seconds)
+        if slabbed_user_count < self.current_user_count:
+            if self.get_run_time() % 60 == 0:
+                return slabbed_user_count
+
+        return self.current_user_count
+
     def stop_runner(self):
         if self.runner is not None:
             self.runner.quit()
