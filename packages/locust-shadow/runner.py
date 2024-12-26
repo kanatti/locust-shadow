@@ -4,12 +4,15 @@ from locust.log import setup_logging
 import gevent
 import logging
 from warmup_user import WarmupUser
+from warmup_shape import WarmupShape
 from user import DynamicMinuteBatchUser
 
-def setup_locust_environment(config, is_warmup=False):
+def _setup_locust_environment(config, is_warmup=False):
     if is_warmup:
         user_classes = [WarmupUser]
-        env = Environment(user_classes=user_classes, host=config.host)
+        shape = WarmupShape()
+        shape.set_warmup_config(config)
+        env = Environment(user_classes=user_classes, shape_class=shape, host=config.host)
         env.create_local_runner()
         env.runner.warmup_config = config
     else:
@@ -25,10 +28,12 @@ def setup_locust_environment(config, is_warmup=False):
     setup_logging("INFO", None)
     return env
 
-def run_locust(env: Environment, is_warmup=False):
-    user_count = 1  # Always use 1 user
-
-    env.runner.start(user_count, spawn_rate=user_count)
+def _run_locust(env: Environment, is_warmup=False):
+    if is_warmup:
+        env.runner.start_shape()
+    else:
+        user_count = 1  # For shadow testing, we still use 1 user. will followup and fix.
+        env.runner.start(user_count, spawn_rate=user_count)
     gevent.spawn(stats_printer(env.stats))
     gevent.spawn(stats_history, env.runner)
 
@@ -40,14 +45,16 @@ def run_locust(env: Environment, is_warmup=False):
         env.runner.quit()
 
 def run_warmup(warmup_config):
-    env = setup_locust_environment(warmup_config, is_warmup=True)
+    env = _setup_locust_environment(warmup_config, is_warmup=True)
     logging.info(f"Starting warmup from {warmup_config.start_rps} to {warmup_config.end_rps} RPS")
-    run_locust(env, is_warmup=True)
+    logging.info(f"Step duration: {warmup_config.step_duration} seconds")
+    logging.info(f"RPS increment: {warmup_config.rps_increment}")
+    _run_locust(env, is_warmup=True)
 
 def run_shadow(shadow_config):
-    env = setup_locust_environment(shadow_config)
+    env = _setup_locust_environment(shadow_config)
     minute_batches = shadow_config.get_minute_batches()
     total_duration = len(minute_batches) * 60
     logging.info(f"Loaded {len(minute_batches)} minute batches.")
     logging.info(f"Total shadow run duration will be {total_duration} seconds ({total_duration/60:.2f} minutes).")
-    run_locust(env)
+    _run_locust(env)

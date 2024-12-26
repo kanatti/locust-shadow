@@ -1,13 +1,11 @@
 import argparse
-from locust.env import Environment
-from locust.stats import stats_printer, stats_history
-from locust.log import setup_logging
-import gevent
 from config import ShadowConfig, WarmupConfig
+
+from runner import run_warmup, run_shadow
+
 import logging
 
-from user import DynamicMinuteBatchUser
-from runner import setup_locust_environment, run_locust
+logging.basicConfig(level=logging.DEBUG)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Locust Shadow - Replay production traffic patterns and perform warmup")
@@ -23,24 +21,16 @@ def parse_arguments():
 
     return parser.parse_args()
 
-def run_warmup(config_path):
-    print(f"Running warmup with config file: {config_path}")
-    config = WarmupConfig.from_yaml(config_path)
-    env = setup_locust_environment(config, True)
-    run_locust(env)
-
-def run_shadow(config_path):
-    config = ShadowConfig.from_yaml(config_path)
-    env = setup_locust_environment(config, False)
-    run_locust(env)
 
 def main():
     args = parse_arguments()
 
     if args.command == "warmup":
-        run_warmup(args.config)
+        print(f"Running warmup with config file: {args.config}")
+        run_warmup(WarmupConfig.from_yaml(args.config))
     elif args.command == "shadow":
-        run_shadow(args.config)
+        print(f"Running shadow with config file: {args.config}")
+        run_shadow(ShadowConfig.from_yaml(args.config))
     else:
         print("Please specify a command: warmup or shadow")
 

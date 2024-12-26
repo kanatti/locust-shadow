@@ -2,6 +2,6 @@ host: http://localhost:8000
 start_rps: 5
 rps_increment: 5
 step_duration: 20
-end_rps: 50
+end_rps: 15
 request_files:
   - ./dev/warmup/requests1.jsonl
