@@ -33,10 +33,15 @@ class WarmupShape(LoadTestShape):
             self.warmup_config.end_rps
         )
 
-        # Estimate the number of users needed to achieve the desired RPS
-        user_count = int(current_rps * 1.2)  # Add 20% more users to account for wait times
+        # Calculate the number of users needed to achieve the desired RPS
+        user_count = max(1, int(current_rps))  # Ensure at least 1 user
 
         logging.info(f"Current step: {current_step}/{self.expected_steps}, Target RPS: {current_rps}, User count: {user_count}")
+
+        # Update the wait time for all users
+        for user in self.runner.user_classes:
+            if hasattr(user, 'update_wait_time'):
+                user.update_wait_time(current_rps, user_count)
 
         return (user_count, user_count)  # (user_count, spawn_rate)
     

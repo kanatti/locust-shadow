@@ -1,10 +1,11 @@
 import json
-from locust import HttpUser, task, between
+from locust import HttpUser, task, constant_throughput
 import random
 import logging
 
 class WarmupUser(HttpUser):
-    wait_time = between(0.1, 1)  # Small wait time between requests
+    # We'll set this dynamically based on the current RPS and user count
+    wait_time = constant_throughput(1)  # Default value, will be updated
 
     def __init__(self, environment):
         super().__init__(environment)
@@ -27,3 +28,12 @@ class WarmupUser(HttpUser):
     def execute_request(self):
         request = random.choice(self.requests)
         self.client.get(request["path"], params=request["params"])
+
+    @classmethod
+    def update_wait_time(cls, current_rps, user_count):
+        if user_count > 0:
+            # Calculate the required throughput per user
+            throughput_per_user = current_rps / user_count
+            cls.wait_time = constant_throughput(throughput_per_user)
+        else:
+            cls.wait_time = constant_throughput(1)  # Default to 1 RPS if user_count is 0
