@@ -1,0 +1,14 @@
+[project]
+name = "examples"
+version = "0.1.0"
+description = "examples"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["locust-shadow"]
+
+[project.scripts]
+warmup = "examples:warmup.main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
