@@ -1,9 +1,9 @@
 import logging
 from locust import task
 
+from locust_shadow.config import WarmupConfig
 from locust_shadow.strict_rps import StrictRpsShape, StrictRpsUser
-from locust_shadow.request_provider import BaseRequestProvider
-from locust_shadow.request_provider import FileRequestProvider
+from locust_shadow.request_provider import BaseRequestProvider, S3RequestProvider, FileRequestProvider
 
 class WarmupShape(StrictRpsShape):
     def __init__(self):
@@ -66,7 +66,28 @@ class WarmupUser(StrictRpsUser):
 
     def on_start(self):
         self.warmup_config = self.environment.runner.warmup_config
-        self.request_provider = FileRequestProvider(self.warmup_config.request_files)
+        self.request_provider = self.create_request_provider()
+
+class WarmupUser(StrictRpsUser):
+    def __init__(self, environment):
+        super().__init__(environment)
+        self.warmup_config = None
+        self.request_provider: BaseRequestProvider = None
+
+    def on_start(self):
+        self.warmup_config = self.environment.runner.warmup_config
+        self.request_provider = self.create_request_provider()
+
+    def create_request_provider(self):
+        if self.warmup_config.is_s3_config():
+            s3_files = [WarmupConfig.parse_s3_uri(uri) for uri in self.warmup_config.request_files]
+            return S3RequestProvider(
+                s3_files,
+                endpoint_url=self.warmup_config.s3_endpoint_override,
+                profile=self.warmup_config.s3_profile
+            )
+        else:
+            return FileRequestProvider(self.warmup_config.request_files)
 
     @task
     def execute_request(self):

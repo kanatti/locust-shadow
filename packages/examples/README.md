@@ -13,8 +13,15 @@ You can run these examples from the workspace root using the `uv` command. Here 
 
 ### Warmup Test
 
-```
-uv run --package examples warmup -c ./dev/warmup-config.yaml
+```sh
+# run against local request files
+uv run --package examples warmup -c ./dev/warmup-local.yaml
+
+# with debug enabled
+uv run --package examples warmup -c ./dev/warmup-local.yaml --debug
+
+# run against s3 files, with local override for minio.
+uv run --package examples warmup -c ./dev/warmup-s3.yaml --s3-endpoint http://localhost:9000 --s3-profile minio
 ```
 
 ### Shadow Test
@@ -27,14 +34,14 @@ uv run --package examples shadow -c ./dev/shadow-config.yaml
 
 Both examples use YAML configuration files:
 
-- `./dev/warmup-config.yaml`: Configuration for the warmup test
+- `./dev/warmup-local.yaml`: Configuration for the warmup test
 - `./dev/shadow-config.yaml`: Configuration for the shadow test
 
 Ensure these configuration files exist and are properly set up before running the examples.
 
 ## Using Echo-Server with Dev Configurations
 
-When using the dev configurations (`./dev/warmup-config.yaml` and `./dev/shadow-config.yaml`), you'll need to run the echo-server to handle the requests. The echo-server is a simple HTTP server that echoes back the requests it receives, which is useful for testing purposes.
+When using the dev configurations (`./dev/warmup-local.yaml` and `./dev/shadow-config.yaml`), you'll need to run the echo-server to handle the requests. The echo-server is a simple HTTP server that echoes back the requests it receives, which is useful for testing purposes.
 
 To run the echo-server:
 
