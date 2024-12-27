@@ -8,6 +8,8 @@ dependencies = ["locust-shadow"]
 
 [project.scripts]
 warmup = "examples:warmup.main"
+shadow = "examples:shadow.main"
+
 
 [build-system]
 requires = ["hatchling"]
