@@ -1,14 +1,9 @@
-import random
-import json
 import logging
-import time
-import threading
-import math
-from collections import deque
-
-from locust import LoadTestShape, HttpUser, task, constant_pacing
+from locust import task
 
 from locust_shadow.strict_rps import StrictRpsShape, StrictRpsUser
+from locust_shadow.request_provider import BaseRequestProvider
+from locust_shadow.request_provider import FileRequestProvider
 
 class WarmupShape(StrictRpsShape):
     def __init__(self):
@@ -67,22 +62,14 @@ class WarmupUser(StrictRpsUser):
     def __init__(self, environment):
         super().__init__(environment)
         self.warmup_config = None
-        self.requests = []
+        self.request_provider: BaseRequestProvider = None
 
     def on_start(self):
         self.warmup_config = self.environment.runner.warmup_config
-        self.load_requests()
-
-    def load_requests(self):
-        for request_file in self.warmup_config.request_files:
-            with open(request_file, "r") as f:
-                self.requests.extend([json.loads(line) for line in f])
-        if not self.requests:
-            raise ValueError("No requests found in the JSONL files")
-        logging.info(f"Loaded {len(self.requests)} requests from JSONL files")
+        self.request_provider = FileRequestProvider(self.warmup_config.request_files)
 
     @task
     def execute_request(self):
-        request = random.choice(self.requests)
+        request = self.request_provider.get_request()
         with self.measure_latency():
             self.client.get(request["path"], params=request["params"])

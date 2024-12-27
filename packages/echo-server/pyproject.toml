@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 dependencies = ["fastapi", "uvicorn"]
 
 [project.scripts]
-cli = "echo_server:cli"
+echo_server = "echo_server:cli"
 
 [build-system]
 requires = ["hatchling"]

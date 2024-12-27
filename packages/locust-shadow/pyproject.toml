@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 dependencies = ["locust", "PyYAML"]
 
 [project.scripts]
-cli = "locust_shadow:cli"
+locust_shadow = "locust_shadow:cli"
 
 [build-system]
 requires = ["hatchling"]
